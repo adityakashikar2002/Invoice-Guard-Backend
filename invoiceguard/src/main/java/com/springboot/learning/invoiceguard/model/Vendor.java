@@ -2,6 +2,8 @@ package com.springboot.learning.invoiceguard.model;
 
 import jakarta.persistence.*;
 
+import java.util.UUID;
+
 @Entity
 public class Vendor {
 
@@ -21,8 +23,8 @@ public class Vendor {
 
     }
 
-    public Vendor(String regisNo, String vendorName, VendorStatus status) {
-        this.regisNo = regisNo;
+    public Vendor(String vendorName, VendorStatus status) {
+        this.regisNo = UUID.randomUUID().toString();
         this.vendorName = vendorName;
         this.status = status;
     }
@@ -48,8 +50,8 @@ public class Vendor {
         this.vendorName = vendorName;
     }
 
-    public VendorStatus getStatus() {
-        return status;
+    public String getStatus() {
+        return status.toString();
     }
 
     public void setStatus(VendorStatus status) {
