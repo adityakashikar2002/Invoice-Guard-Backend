@@ -7,8 +7,8 @@ import com.springboot.learning.invoiceguard.model.VendorStatus;
 import com.springboot.learning.invoiceguard.repository.VendorRepository;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 
 @Service
 public class VendorService {
@@ -25,18 +25,35 @@ public class VendorService {
 
         vendorRepository.save(vendor);
 
-        VendorResponseDTO response = new VendorResponseDTO(vendor.getVendorId(), vendor.getVendorName(),
-                vendor.getRegisNo(), vendor.getStatus());
+        Vendor savedVendor = vendorRepository.save(vendor);
 
-        return response;
+        return new VendorResponseDTO(
+                savedVendor.getVendorId(),
+                savedVendor.getVendorName(),
+                savedVendor.getRegisNo(),
+                savedVendor.getStatus()
+        );
     }
 
-    public Vendor getVendorById(Long id) {
+    public VendorResponseDTO getVendorById(Long id) {
         Optional<Vendor> vendor = vendorRepository.findById(id);
 
-        if(!vendor.isPresent())
+        if(vendor.isEmpty())
             throw new RuntimeException("No Vendor Found !!");
 
-        return vendor.get();
+        return new VendorResponseDTO(vendor.get().getVendorId(), vendor.get().getVendorName(),
+                vendor.get().getRegisNo(), vendor.get().getStatus());
     }
+
+    public List<VendorResponseDTO> getAllVendors() {
+        List<Vendor> vendors = vendorRepository.findAll();
+
+        return vendors.stream().map(v -> new VendorResponseDTO(
+                v.getVendorId(),
+                v.getVendorName(),
+                v.getRegisNo(),
+                v.getStatus()
+        )).toList();
+    }
+
 }

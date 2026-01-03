@@ -12,8 +12,10 @@ public class Invoice {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    private String invoiceNumber;
+
     @ManyToOne
-    @JoinColumn(name = "vendor_id")
+    @JoinColumn(name = "vendor_id", nullable = false)
     private Vendor vendor;
 
     private String billTo;
@@ -31,7 +33,8 @@ public class Invoice {
 
     }
 
-    public Invoice(Vendor vendor, String billTo, LocalDate invoiceDate, LocalDate dueDate, BigDecimal amount, InvoiceStatus status) {
+    public Invoice(String invoiceNumber, Vendor vendor, String billTo, LocalDate invoiceDate, LocalDate dueDate, BigDecimal amount, InvoiceStatus status) {
+        this.invoiceNumber = invoiceNumber;
         this.vendor = vendor;
         this.billTo = billTo;
         this.invoiceDate = invoiceDate;
@@ -84,11 +87,19 @@ public class Invoice {
         this.amount = amount;
     }
 
-    public InvoiceStatus getStatus() {
-        return status;
+    public String getStatus() {
+        return status.toString();
     }
 
     public void setStatus(InvoiceStatus status) {
         this.status = status;
+    }
+
+    public String getInvoiceNumber() {
+        return invoiceNumber;
+    }
+
+    public void setInvoiceNumber(String invoiceNumber) {
+        this.invoiceNumber = invoiceNumber;
     }
 }

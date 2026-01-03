@@ -1,16 +1,18 @@
 package com.springboot.learning.invoiceguard.dto;
 
+import com.springboot.learning.invoiceguard.model.VendorStatus;
+
 public class VendorResponseDTO {
     private Long id;
     private String name;
     private String registrationNo;
-    private String status;
+    private VendorStatus status;
 
     public VendorResponseDTO() {
 
     }
 
-    public VendorResponseDTO(Long id, String name, String registrationNo, String status) {
+    public VendorResponseDTO(Long id, String name, String registrationNo, VendorStatus status) {
         this.id = id;
         this.name = name;
         this.registrationNo = registrationNo;
@@ -29,7 +31,7 @@ public class VendorResponseDTO {
         this.registrationNo = registrationNo;
     }
 
-    public void setStatus(String status) {
+    public void setStatus(VendorStatus status) {
         this.status = status;
     }
 
@@ -45,7 +47,7 @@ public class VendorResponseDTO {
         return registrationNo;
     }
 
-    public String getStatus() {
+    public VendorStatus getStatus() {
         return status;
     }
 }

@@ -1,14 +1,22 @@
 package com.springboot.learning.invoiceguard.controller;
 
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import com.springboot.learning.invoiceguard.dto.InvoiceCreationRequestDTO;
+import com.springboot.learning.invoiceguard.dto.InvoiceResponseDTO;
+import com.springboot.learning.invoiceguard.service.InvoiceService;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
+@RequestMapping("/api/invoices")
 public class InvoiceController {
 
-    @GetMapping("/test")
-    public String testInvoice() {
-        return "InvoiceGuard is running !!";
+    private final InvoiceService invoiceService;
+
+    public InvoiceController(InvoiceService invoiceService) {
+        this.invoiceService = invoiceService;
+    }
+
+    @PostMapping("/create")
+    public InvoiceResponseDTO createInvoice(@RequestBody InvoiceCreationRequestDTO request) {
+        return invoiceService.generateInvoice(request);
     }
 }

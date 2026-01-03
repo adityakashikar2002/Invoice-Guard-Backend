@@ -1,7 +1,5 @@
 package com.springboot.learning.invoiceguard.dto;
 
-import org.jspecify.annotations.NonNull;
-
 public class VendorRequestDTO {
 
     private String name;

@@ -50,8 +50,8 @@ public class Vendor {
         this.vendorName = vendorName;
     }
 
-    public String getStatus() {
-        return status.toString();
+    public VendorStatus getStatus() {
+        return status;
     }
 
     public void setStatus(VendorStatus status) {
