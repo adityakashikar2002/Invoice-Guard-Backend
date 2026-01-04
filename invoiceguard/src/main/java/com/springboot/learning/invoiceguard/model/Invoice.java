@@ -6,6 +6,10 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Entity
+@Table(name = "invoice",
+        uniqueConstraints = {
+                @UniqueConstraint(columnNames = {"invoice_number", "vendor_id"})
+        })
 public class Invoice {
 
     @Id

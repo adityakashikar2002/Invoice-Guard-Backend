@@ -24,6 +24,7 @@ public class InvoiceService {
 
     public InvoiceResponseDTO generateInvoice(InvoiceCreationRequestDTO request) {
 
+
         // Fetch Vendor By Id
         Optional<Vendor> v = vendorRepository.findById(request.getVendorId());
 
@@ -32,10 +33,16 @@ public class InvoiceService {
 
         Vendor vendor = v.get();
 
+
         // Check Vendor Status
         if(vendor.getStatus().equals(VendorStatus.BLOCKED))
             throw new RuntimeException("Vendor is Blocked !! Cannot Create Invoice");
 
+        // Duplicate Invoice Check
+        if(invoiceRepository.existsByInvoiceNumberAndVendorId(request.getInvoiceNo(), vendor.getVendorId()))
+            throw new RuntimeException("Invoice " + request.getInvoiceNo() + " already exists for Vendor: " + vendor.getVendorName());
+
+        // Create Invoice
         Invoice invoice = new Invoice(request.getInvoiceNo(), vendor, request.getBillTo(), request.getInvoiceDate(),
                 request.getDueDate(), request.getAmount(), InvoiceStatus.CREATED);
 
@@ -46,4 +53,6 @@ public class InvoiceService {
         return new InvoiceResponseDTO(savedInvoice.getId(), savedInvoice.getInvoiceNumber(), vendor.getVendorId(), vendor.getVendorName(), vendor.getStatus(),
                 savedInvoice.getBillTo(), savedInvoice.getAmount(), savedInvoice.getInvoiceDate(), savedInvoice.getDueDate());
     }
+
+
 }
