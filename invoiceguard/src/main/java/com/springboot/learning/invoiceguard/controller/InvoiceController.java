@@ -1,5 +1,6 @@
 package com.springboot.learning.invoiceguard.controller;
 
+import com.springboot.learning.invoiceguard.dto.InvoiceActionResponseDTO;
 import com.springboot.learning.invoiceguard.dto.InvoiceCreationRequestDTO;
 import com.springboot.learning.invoiceguard.dto.InvoiceResponseDTO;
 import com.springboot.learning.invoiceguard.service.InvoiceService;
@@ -19,4 +20,25 @@ public class InvoiceController {
     public InvoiceResponseDTO createInvoice(@RequestBody InvoiceCreationRequestDTO request) {
         return invoiceService.generateInvoice(request);
     }
+
+    @PostMapping("/{id}/submit")
+    public InvoiceActionResponseDTO submitInvoice(@PathVariable Long id) {
+        return invoiceService.submitStatus(id);
+    }
+
+    @PostMapping("/{id}/approve")
+    public InvoiceActionResponseDTO approveInvoice(@PathVariable Long id) {
+        return invoiceService.approveStatus(id);
+    }
+
+    @PostMapping("/{id}/reject")
+    public InvoiceActionResponseDTO rejectInvoice(@PathVariable Long id) {
+        return invoiceService.rejectStatus(id);
+    }
+
+    @PostMapping("/{id}/pay")
+    public InvoiceActionResponseDTO payInvoice(@PathVariable Long id) {
+        return invoiceService.payStatus(id);
+    }
+
 }

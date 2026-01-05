@@ -91,8 +91,8 @@ public class Invoice {
         this.amount = amount;
     }
 
-    public String getStatus() {
-        return status.toString();
+    public InvoiceStatus getStatus() {
+        return status;
     }
 
     public void setStatus(InvoiceStatus status) {
@@ -106,4 +106,6 @@ public class Invoice {
     public void setInvoiceNumber(String invoiceNumber) {
         this.invoiceNumber = invoiceNumber;
     }
+
+
 }
