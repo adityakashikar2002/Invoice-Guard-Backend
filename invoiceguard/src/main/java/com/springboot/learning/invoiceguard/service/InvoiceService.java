@@ -11,10 +11,13 @@ import com.springboot.learning.invoiceguard.repository.InvoiceRepository;
 import com.springboot.learning.invoiceguard.repository.VendorRepository;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.Optional;
 
 @Service
 public class InvoiceService {
+    private final BigDecimal AUTO_APPROVAL_LIMIT = new BigDecimal("30000");
+
     private final InvoiceRepository invoiceRepository;
     private final VendorRepository vendorRepository;
 
@@ -76,12 +79,17 @@ public class InvoiceService {
         if(invoice.getStatus() != InvoiceStatus.CREATED)
             throw new RuntimeException("Only Created Invoices can be submitted");
 
-        // Update Status
-        invoice.setStatus(InvoiceStatus.SUBMITTED);
+        // Auto-approve check
+        boolean isAutoApproved = invoice.getAmount().compareTo(AUTO_APPROVAL_LIMIT) <= 0;
 
+        InvoiceStatus targetStatus = isAutoApproved ? InvoiceStatus.APPROVED : InvoiceStatus.SUBMITTED;
+        String message = isAutoApproved ? "Invoice Auto-Approved" : "Invoice submitted for Approval";
+
+        // Update Status and Save Invoice
+        invoice.setStatus(targetStatus);
         invoiceRepository.save(invoice);
 
-        return new InvoiceActionResponseDTO("Invoice submitted successfully for approval !!", id, InvoiceStatus.SUBMITTED);
+        return new InvoiceActionResponseDTO(message, id, targetStatus);
     }
 
     public InvoiceActionResponseDTO approveStatus(Long id) {
