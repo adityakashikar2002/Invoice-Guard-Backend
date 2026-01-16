@@ -3,8 +3,11 @@ package com.springboot.learning.invoiceguard.controller;
 import com.springboot.learning.invoiceguard.dto.InvoiceActionResponseDTO;
 import com.springboot.learning.invoiceguard.dto.InvoiceCreationRequestDTO;
 import com.springboot.learning.invoiceguard.dto.InvoiceResponseDTO;
+import com.springboot.learning.invoiceguard.model.InvoiceAudit;
 import com.springboot.learning.invoiceguard.service.InvoiceService;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/invoices")
@@ -39,6 +42,11 @@ public class InvoiceController {
     @PostMapping("/{id}/pay")
     public InvoiceActionResponseDTO payInvoice(@PathVariable Long id) {
         return invoiceService.payStatus(id);
+    }
+
+    @GetMapping("/{id}/audit")
+    public List<InvoiceAudit> auditLogs(@PathVariable Long id) {
+        return invoiceService.auditList(id);
     }
 
 }
