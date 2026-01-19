@@ -6,6 +6,9 @@ import com.springboot.learning.invoiceguard.dto.InvoiceResponseDTO;
 import com.springboot.learning.invoiceguard.model.InvoiceAudit;
 import com.springboot.learning.invoiceguard.model.InvoiceStatus;
 import com.springboot.learning.invoiceguard.service.InvoiceService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
@@ -52,21 +55,25 @@ public class InvoiceController {
     }
 
     @GetMapping("/search")
-    public List<InvoiceResponseDTO> searchInvoices(
+    public Page<InvoiceResponseDTO> searchInvoices(
             @RequestParam(value = "status", required = false)InvoiceStatus status,
-            @RequestParam(value = "vectorId", required = false)Long id,
+            @RequestParam(value = "vectorId", required = false)Long vendorId,
             @RequestParam(value = "startDate", required = false)LocalDate start,
-            @RequestParam(value = "endDate", required = false) LocalDate end
+            @RequestParam(value = "endDate", required = false) LocalDate end,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
             )
     {
-        if(status != null)
-            return invoiceService.getInvoiceByStatus(status);
-        else if (id != null)
-            return invoiceService.getInvoiceByVendorId(id);
+        Pageable pageable = PageRequest.of(page, size);
+
+        if (status != null)
+            return invoiceService.getInvoiceByStatus(status, pageable);
+        else if (vendorId != null)
+            return invoiceService.getInvoiceByVendorId(vendorId, pageable);
         else if (start != null && end != null)
-            return invoiceService.getInvoiceBetween(start, end);
+            return invoiceService.getInvoiceBetween(start, end, pageable);
         else
-            return invoiceService.getInvoices();
+            return invoiceService.getInvoices(pageable);
     }
 
 }

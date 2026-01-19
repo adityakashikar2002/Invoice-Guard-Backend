@@ -7,6 +7,9 @@ import com.springboot.learning.invoiceguard.model.*;
 import com.springboot.learning.invoiceguard.repository.InvoiceAuditRepository;
 import com.springboot.learning.invoiceguard.repository.InvoiceRepository;
 import com.springboot.learning.invoiceguard.repository.VendorRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -182,29 +185,38 @@ public class InvoiceService {
 
         return invoicesList;
     }
-    public List<InvoiceResponseDTO> getInvoiceByStatus(InvoiceStatus status) {
-        List<Invoice> invoices = invoiceRepository.findByStatus(status);
 
-        return convertToInvoiceResponse(invoices);
+    public Page<InvoiceResponseDTO> getInvoiceByStatus(InvoiceStatus status, Pageable pageable) {
+        Page<Invoice> invoices = invoiceRepository.findByStatus(status, pageable);
+
+        List<InvoiceResponseDTO> invLists = convertToInvoiceResponse(invoices.getContent());
+
+        return new PageImpl<>(invLists, pageable, invoices.getTotalElements());
     }
 
-    public List<InvoiceResponseDTO> getInvoiceByVendorId(Long vendorId) {
-        List<Invoice> invoices = invoiceRepository.findByVendorId(vendorId);
+    public Page<InvoiceResponseDTO> getInvoiceByVendorId(Long vendorId, Pageable pageable) {
+        Page<Invoice> invoices = invoiceRepository.findByVendorId(vendorId, pageable);
 
-        return convertToInvoiceResponse(invoices);
+        List<InvoiceResponseDTO> invLists = convertToInvoiceResponse(invoices.getContent());
+
+        return new PageImpl<>(invLists, pageable, invoices.getTotalElements());
     }
 
-    public List<InvoiceResponseDTO> getInvoices() {
+    public Page<InvoiceResponseDTO> getInvoices(Pageable pageable) {
 
-        List<Invoice> invoices = invoiceRepository.findAll();
+        Page<Invoice> invoices = invoiceRepository.findAll(pageable);
 
-        return convertToInvoiceResponse(invoices);
+        List<InvoiceResponseDTO> invLists = convertToInvoiceResponse(invoices.getContent());
+
+        return new PageImpl<>(invLists, pageable, invoices.getTotalElements());
     }
 
-    public List<InvoiceResponseDTO> getInvoiceBetween(LocalDate start, LocalDate end) {
+    public Page<InvoiceResponseDTO> getInvoiceBetween(LocalDate start, LocalDate end, Pageable pageable) {
 
-        List<Invoice> invoices = invoiceRepository.findByInvoiceDateBetween(start, end);
+        Page<Invoice> invoices = invoiceRepository.findByInvoiceDateBetween(start, end, pageable);
 
-        return convertToInvoiceResponse(invoices);
+        List<InvoiceResponseDTO> invLists = convertToInvoiceResponse(invoices.getContent());
+
+        return new PageImpl<>(invLists, pageable, invoices.getTotalElements());
     }
 }
