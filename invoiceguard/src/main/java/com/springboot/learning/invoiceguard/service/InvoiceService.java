@@ -10,7 +10,9 @@ import com.springboot.learning.invoiceguard.repository.VendorRepository;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -165,5 +167,44 @@ public class InvoiceService {
 
     public List<InvoiceAudit> auditList(Long id) {
         return invoiceAuditRepository.findByInvoiceIdOrderByTimeStampDesc(id);
+    }
+
+    private List<InvoiceResponseDTO> convertToInvoiceResponse(List<Invoice> invoices) {
+        List<InvoiceResponseDTO> invoicesList = new ArrayList<>();
+
+        for(Invoice invoice : invoices) {
+            Vendor vendor = invoice.getVendor();
+
+            invoicesList.add(new InvoiceResponseDTO(invoice.getId(), invoice.getInvoiceNumber(),
+                    vendor.getVendorId(), vendor.getVendorName(), vendor.getStatus(),
+                    invoice.getBillTo(),invoice.getAmount(), invoice.getInvoiceDate(),invoice.getDueDate()));
+        }
+
+        return invoicesList;
+    }
+    public List<InvoiceResponseDTO> getInvoiceByStatus(InvoiceStatus status) {
+        List<Invoice> invoices = invoiceRepository.findByStatus(status);
+
+        return convertToInvoiceResponse(invoices);
+    }
+
+    public List<InvoiceResponseDTO> getInvoiceByVendorId(Long vendorId) {
+        List<Invoice> invoices = invoiceRepository.findByVendorId(vendorId);
+
+        return convertToInvoiceResponse(invoices);
+    }
+
+    public List<InvoiceResponseDTO> getInvoices() {
+
+        List<Invoice> invoices = invoiceRepository.findAll();
+
+        return convertToInvoiceResponse(invoices);
+    }
+
+    public List<InvoiceResponseDTO> getInvoiceBetween(LocalDate start, LocalDate end) {
+
+        List<Invoice> invoices = invoiceRepository.findByInvoiceDateBetween(start, end);
+
+        return convertToInvoiceResponse(invoices);
     }
 }

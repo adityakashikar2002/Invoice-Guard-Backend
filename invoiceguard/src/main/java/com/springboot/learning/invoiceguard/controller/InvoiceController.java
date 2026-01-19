@@ -4,9 +4,11 @@ import com.springboot.learning.invoiceguard.dto.InvoiceActionResponseDTO;
 import com.springboot.learning.invoiceguard.dto.InvoiceCreationRequestDTO;
 import com.springboot.learning.invoiceguard.dto.InvoiceResponseDTO;
 import com.springboot.learning.invoiceguard.model.InvoiceAudit;
+import com.springboot.learning.invoiceguard.model.InvoiceStatus;
 import com.springboot.learning.invoiceguard.service.InvoiceService;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -47,6 +49,24 @@ public class InvoiceController {
     @GetMapping("/{id}/audit")
     public List<InvoiceAudit> auditLogs(@PathVariable Long id) {
         return invoiceService.auditList(id);
+    }
+
+    @GetMapping("/search")
+    public List<InvoiceResponseDTO> searchInvoices(
+            @RequestParam(value = "status", required = false)InvoiceStatus status,
+            @RequestParam(value = "vectorId", required = false)Long id,
+            @RequestParam(value = "startDate", required = false)LocalDate start,
+            @RequestParam(value = "endDate", required = false) LocalDate end
+            )
+    {
+        if(status != null)
+            return invoiceService.getInvoiceByStatus(status);
+        else if (id != null)
+            return invoiceService.getInvoiceByVendorId(id);
+        else if (start != null && end != null)
+            return invoiceService.getInvoiceBetween(start, end);
+        else
+            return invoiceService.getInvoices();
     }
 
 }
