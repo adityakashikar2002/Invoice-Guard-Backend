@@ -3,6 +3,7 @@ package com.springboot.learning.invoiceguard.service;
 import com.springboot.learning.invoiceguard.dto.InvoiceActionResponseDTO;
 import com.springboot.learning.invoiceguard.dto.InvoiceCreationRequestDTO;
 import com.springboot.learning.invoiceguard.dto.InvoiceResponseDTO;
+import com.springboot.learning.invoiceguard.exception.*;
 import com.springboot.learning.invoiceguard.model.*;
 import com.springboot.learning.invoiceguard.repository.InvoiceAuditRepository;
 import com.springboot.learning.invoiceguard.repository.InvoiceRepository;
@@ -40,18 +41,18 @@ public class InvoiceService {
         Optional<Vendor> v = vendorRepository.findById(request.getVendorId());
 
         if(v.isEmpty())
-            throw new RuntimeException("No Vendor Found !!");
+            throw new VendorNotFoundException("No Vendor Found !!");
 
         Vendor vendor = v.get();
 
 
         // Check Vendor Status
         if(vendor.getStatus().equals(VendorStatus.BLOCKED))
-            throw new RuntimeException("Vendor is Blocked !! Cannot Create Invoice");
+            throw new BlockedVendorException("Vendor is Blocked !! Cannot Create Invoice");
 
         // Duplicate Invoice Check
         if(invoiceRepository.existsByInvoiceNumberAndVendorId(request.getInvoiceNo(), vendor.getVendorId()))
-            throw new RuntimeException("Invoice " + request.getInvoiceNo() + " already exists for Vendor: " + vendor.getVendorName());
+            throw new DuplicateInvoiceException("Invoice " + request.getInvoiceNo() + " already exists for Vendor: " + vendor.getVendorName());
 
         // Create Invoice
         Invoice invoice = new Invoice(request.getInvoiceNo(), vendor, request.getBillTo(), request.getInvoiceDate(),
@@ -69,13 +70,13 @@ public class InvoiceService {
         Optional<Invoice> inv = invoiceRepository.findById(id);
 
         if(inv.isEmpty())
-            throw new RuntimeException("No Invoice Found !!");
+            throw new InvoiceNotFoundException("No Invoice Found !!");
 
         // Check Current Status of Invoice and Vendor
         Invoice invoice = inv.get();
 
         if(invoice.getVendor().getStatus().equals(VendorStatus.BLOCKED))
-            throw new RuntimeException("Only Active Vendor's Invoices can be submitted");
+            throw new BlockedVendorException("Only Active Vendor's Invoices can be submitted");
 
         return invoice;
     }
@@ -84,7 +85,7 @@ public class InvoiceService {
         Invoice invoice = findAndValidateInvoice(id);
 
         if(invoice.getStatus() != InvoiceStatus.CREATED)
-            throw new RuntimeException("Only Created Invoices can be submitted");
+            throw new InvoiceStatusException("Only Created Invoices can be submitted");
 
         // Auto-approve check
         boolean isAutoApproved = invoice.getAmount().compareTo(AUTO_APPROVAL_LIMIT) <= 0;
@@ -110,7 +111,7 @@ public class InvoiceService {
         Invoice invoice = findAndValidateInvoice(id);
 
         if(invoice.getStatus() != InvoiceStatus.SUBMITTED)
-            throw new RuntimeException("Only Submitted Invoices can be processed");
+            throw new InvoiceStatusException("Only Submitted Invoices can be processed");
 
         InvoiceStatus statusBeforeChange = invoice.getStatus();
 
@@ -131,7 +132,7 @@ public class InvoiceService {
         Invoice invoice = findAndValidateInvoice(id);
 
         if(invoice.getStatus() != InvoiceStatus.SUBMITTED)
-            throw new RuntimeException("Only Submitted Invoices can be processed");
+            throw new InvoiceStatusException("Only Submitted Invoices can be processed");
 
         InvoiceStatus statusBeforeChange = invoice.getStatus();
 
@@ -152,7 +153,7 @@ public class InvoiceService {
         Invoice invoice = findAndValidateInvoice(id);
 
         if(invoice.getStatus() != InvoiceStatus.APPROVED)
-            throw new RuntimeException("Only Approved Invoices can be processed for payment");
+            throw new InvoiceStatusException("Only Approved Invoices can be processed for payment");
 
         InvoiceStatus statusBeforeChange = invoice.getStatus();
 

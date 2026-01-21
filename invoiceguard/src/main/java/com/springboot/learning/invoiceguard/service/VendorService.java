@@ -2,6 +2,7 @@ package com.springboot.learning.invoiceguard.service;
 
 import com.springboot.learning.invoiceguard.dto.VendorRequestDTO;
 import com.springboot.learning.invoiceguard.dto.VendorResponseDTO;
+import com.springboot.learning.invoiceguard.exception.VendorNotFoundException;
 import com.springboot.learning.invoiceguard.model.Vendor;
 import com.springboot.learning.invoiceguard.model.VendorStatus;
 import com.springboot.learning.invoiceguard.repository.VendorRepository;
@@ -39,7 +40,7 @@ public class VendorService {
         Optional<Vendor> vendor = vendorRepository.findById(id);
 
         if(vendor.isEmpty())
-            throw new RuntimeException("No Vendor Found !!");
+            throw new VendorNotFoundException("No Vendor Found !!");
 
         return new VendorResponseDTO(vendor.get().getVendorId(), vendor.get().getVendorName(),
                 vendor.get().getRegisNo(), vendor.get().getStatus());
