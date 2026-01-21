@@ -3,6 +3,7 @@ package com.springboot.learning.invoiceguard.controller;
 import com.springboot.learning.invoiceguard.dto.InvoiceActionResponseDTO;
 import com.springboot.learning.invoiceguard.dto.InvoiceCreationRequestDTO;
 import com.springboot.learning.invoiceguard.dto.InvoiceResponseDTO;
+import com.springboot.learning.invoiceguard.model.InvoiceAction;
 import com.springboot.learning.invoiceguard.model.InvoiceAudit;
 import com.springboot.learning.invoiceguard.model.InvoiceStatus;
 import com.springboot.learning.invoiceguard.service.InvoiceService;
@@ -30,24 +31,9 @@ public class InvoiceController {
         return invoiceService.generateInvoice(request);
     }
 
-    @PostMapping("/{id}/submit")
-    public InvoiceActionResponseDTO submitInvoice(@PathVariable Long id) {
-        return invoiceService.submitStatus(id);
-    }
-
-    @PostMapping("/{id}/approve")
-    public InvoiceActionResponseDTO approveInvoice(@PathVariable Long id) {
-        return invoiceService.approveStatus(id);
-    }
-
-    @PostMapping("/{id}/reject")
-    public InvoiceActionResponseDTO rejectInvoice(@PathVariable Long id) {
-        return invoiceService.rejectStatus(id);
-    }
-
-    @PostMapping("/{id}/pay")
-    public InvoiceActionResponseDTO payInvoice(@PathVariable Long id) {
-        return invoiceService.payStatus(id);
+    @PatchMapping("/{id}/status")
+    public InvoiceActionResponseDTO updateInvoiceStatus(@PathVariable Long id, @Valid @RequestBody InvoiceAction action) {
+        return invoiceService.updateStatus(id,action);
     }
 
     @GetMapping("/{id}/audit")

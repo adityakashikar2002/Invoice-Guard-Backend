@@ -28,7 +28,7 @@ public class InvoiceService {
     private final VendorRepository vendorRepository;
     private final InvoiceAuditRepository invoiceAuditRepository;
 
-    public InvoiceService(BigDecimal autoApprovalLimit, InvoiceRepository invoiceRepository, VendorRepository vendorRepository, InvoiceAuditRepository invoiceAuditRepository) {
+    public InvoiceService(InvoiceRepository invoiceRepository, VendorRepository vendorRepository, InvoiceAuditRepository invoiceAuditRepository) {
         this.invoiceRepository = invoiceRepository;
         this.vendorRepository = vendorRepository;
         this.invoiceAuditRepository = invoiceAuditRepository;
@@ -36,6 +36,7 @@ public class InvoiceService {
 
     @Value("${invoice.auto-approval-limit}")
     private BigDecimal AUTO_APPROVAL_LIMIT;
+
 
     public InvoiceResponseDTO generateInvoice(InvoiceCreationRequestDTO request) {
 
@@ -83,93 +84,60 @@ public class InvoiceService {
 
         return invoice;
     }
-    public InvoiceActionResponseDTO submitStatus(Long id) {
+
+    private InvoiceStatus determineSubmitTarget(Invoice invoice) {
+
+        boolean isAutoApproved = invoice.getAmount().compareTo(AUTO_APPROVAL_LIMIT) <= 0;
+
+        return isAutoApproved ? InvoiceStatus.APPROVED : InvoiceStatus.SUBMITTED;
+    }
+
+    private InvoiceStatus validateAndGetStatus(InvoiceStatus oldStatus, InvoiceStatus required, InvoiceStatus target) {
+        if(oldStatus != required)
+            throw new InvoiceStatusException("Only " + required.toString() + " can be processed for transitions.");
+
+        return target;
+    }
+
+    public InvoiceActionResponseDTO updateStatus(Long id, InvoiceAction action) {
         // Check if Invoice Exists
         Invoice invoice = findAndValidateInvoice(id);
 
-        if(invoice.getStatus() != InvoiceStatus.CREATED)
-            throw new InvoiceStatusException("Only Created Invoices can be submitted");
+        // Acquire Old Status
+        InvoiceStatus oldStatus = invoice.getStatus();
+        InvoiceStatus targetStatus;
 
-        // Auto-approve check
-        boolean isAutoApproved = invoice.getAmount().compareTo(AUTO_APPROVAL_LIMIT) <= 0;
+        switch (action) {
+            case InvoiceAction.SUBMIT:
+                if(oldStatus != InvoiceStatus.CREATED)
+                    throw new InvoiceStatusException("Only Created Invoices can be submitted");
+                targetStatus = determineSubmitTarget(invoice); // AUTO-APPROVE CHECK
+                break;
+            case InvoiceAction.APPROVE:
+                targetStatus = validateAndGetStatus(oldStatus, InvoiceStatus.SUBMITTED,InvoiceStatus.APPROVED);
+                break;
+            case InvoiceAction.REJECT:
+                targetStatus = validateAndGetStatus(oldStatus, InvoiceStatus.SUBMITTED,InvoiceStatus.REJECTED);
+                break;
+            case InvoiceAction.PAY:
+                targetStatus = validateAndGetStatus(oldStatus, InvoiceStatus.APPROVED, InvoiceStatus.PAID);
+                break;
+            default:
+                throw new InvalidInvoiceAction("Transition State Not Supported");
+        }
 
-        InvoiceStatus targetStatus = isAutoApproved ? InvoiceStatus.APPROVED : InvoiceStatus.SUBMITTED;
-        String message = isAutoApproved ? "Invoice Auto-Approved" : "Invoice submitted for Approval";
+        // Action Completion Message
+        String message = (action == InvoiceAction.SUBMIT && targetStatus == InvoiceStatus.APPROVED)
+                ? "Invoice Auto-Approved"
+                : "Action " + action + " completed successfully";
 
-        InvoiceStatus statusBeforeChange = invoice.getStatus();
-
-        // Update Status and Save Invoice
-        invoice.setStatus(targetStatus);
+        // Save Invoice, Make Audit, Save Audit
         invoiceRepository.save(invoice);
-
-        // Create and Save Audit
-        InvoiceAudit invoiceAudit = new InvoiceAudit(invoice.getId(), statusBeforeChange, targetStatus, LocalDateTime.now(), InvoiceAction.SUBMIT);
+        InvoiceAudit invoiceAudit = new InvoiceAudit(invoice.getId(), oldStatus, targetStatus, LocalDateTime.now(), action);
         invoiceAuditRepository.save(invoiceAudit);
 
         return new InvoiceActionResponseDTO(message, id, targetStatus);
-    }
 
-    public InvoiceActionResponseDTO approveStatus(Long id) {
-        // Check if Invoice Exists
-        Invoice invoice = findAndValidateInvoice(id);
-
-        if(invoice.getStatus() != InvoiceStatus.SUBMITTED)
-            throw new InvoiceStatusException("Only Submitted Invoices can be processed");
-
-        InvoiceStatus statusBeforeChange = invoice.getStatus();
-
-        // Update Status
-        invoice.setStatus(InvoiceStatus.APPROVED);
-
-        invoiceRepository.save(invoice);
-
-        // Create and Save Audit
-        InvoiceAudit invoiceAudit = new InvoiceAudit(invoice.getId(), statusBeforeChange, InvoiceStatus.APPROVED, LocalDateTime.now(), InvoiceAction.APPROVE);
-        invoiceAuditRepository.save(invoiceAudit);
-
-        return new InvoiceActionResponseDTO("Invoice approved successfully for payment!!", id, InvoiceStatus.APPROVED);
-    }
-
-    public InvoiceActionResponseDTO rejectStatus(Long id) {
-        // Check if Invoice Exists
-        Invoice invoice = findAndValidateInvoice(id);
-
-        if(invoice.getStatus() != InvoiceStatus.SUBMITTED)
-            throw new InvoiceStatusException("Only Submitted Invoices can be processed");
-
-        InvoiceStatus statusBeforeChange = invoice.getStatus();
-
-        // Update Status
-        invoice.setStatus(InvoiceStatus.REJECTED);
-
-        invoiceRepository.save(invoice);
-
-        // Create and Save Audit
-        InvoiceAudit invoiceAudit = new InvoiceAudit(invoice.getId(), statusBeforeChange, InvoiceStatus.REJECTED, LocalDateTime.now(), InvoiceAction.REJECT);
-        invoiceAuditRepository.save(invoiceAudit);
-
-        return new InvoiceActionResponseDTO("Invoice rejected for payment!!", id, InvoiceStatus.REJECTED);
-    }
-
-    public InvoiceActionResponseDTO payStatus(Long id) {
-        // Check if Invoice Exists
-        Invoice invoice = findAndValidateInvoice(id);
-
-        if(invoice.getStatus() != InvoiceStatus.APPROVED)
-            throw new InvoiceStatusException("Only Approved Invoices can be processed for payment");
-
-        InvoiceStatus statusBeforeChange = invoice.getStatus();
-
-        // Update Status
-        invoice.setStatus(InvoiceStatus.PAID);
-
-        invoiceRepository.save(invoice);
-
-        // Create and Save Audit
-        InvoiceAudit invoiceAudit = new InvoiceAudit(invoice.getId(), statusBeforeChange, InvoiceStatus.PAID, LocalDateTime.now(), InvoiceAction.PAY);
-        invoiceAuditRepository.save(invoiceAudit);
-
-        return new InvoiceActionResponseDTO("Invoice payment successful", id, InvoiceStatus.PAID);
     }
 
     public List<InvoiceAudit> auditList(Long id) {
