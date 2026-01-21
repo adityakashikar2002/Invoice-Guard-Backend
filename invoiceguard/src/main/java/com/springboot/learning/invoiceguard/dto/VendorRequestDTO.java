@@ -1,7 +1,10 @@
 package com.springboot.learning.invoiceguard.dto;
 
+import jakarta.validation.constraints.NotBlank;
+
 public class VendorRequestDTO {
 
+    @NotBlank
     private String name;
 
     public VendorRequestDTO() {

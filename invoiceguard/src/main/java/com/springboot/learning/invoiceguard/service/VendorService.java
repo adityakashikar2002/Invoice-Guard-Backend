@@ -24,8 +24,6 @@ public class VendorService {
 
         Vendor vendor = new Vendor(request.getName(), VendorStatus.ACTIVE);
 
-        vendorRepository.save(vendor);
-
         Vendor savedVendor = vendorRepository.save(vendor);
 
         return new VendorResponseDTO(

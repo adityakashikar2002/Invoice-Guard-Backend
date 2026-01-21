@@ -1,20 +1,31 @@
 package com.springboot.learning.invoiceguard.dto;
 
+import jakarta.validation.constraints.*;
+import org.jspecify.annotations.NonNull;
+
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
 public class InvoiceCreationRequestDTO {
 
+    @NotBlank(message = "Every Invoice Needs Invoice No.")
     private String invoiceNo;
 
+    @NotNull(message = "Invoice can't be created without Vendor")
     private Long vendorId;
 
+    @NotBlank(message = "Client must be named on Invoice")
     private String billTo;
 
+    @NotNull
+    @Min(1)
     private BigDecimal amount;
 
+    @NotNull
+    @FutureOrPresent(message = "Invoice date can't be in past")
     private LocalDate invoiceDate;
 
+    @Future
     private LocalDate dueDate;
 
     public InvoiceCreationRequestDTO() {

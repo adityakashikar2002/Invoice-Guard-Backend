@@ -8,6 +8,7 @@ import com.springboot.learning.invoiceguard.model.*;
 import com.springboot.learning.invoiceguard.repository.InvoiceAuditRepository;
 import com.springboot.learning.invoiceguard.repository.InvoiceRepository;
 import com.springboot.learning.invoiceguard.repository.VendorRepository;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -22,17 +23,19 @@ import java.util.Optional;
 
 @Service
 public class InvoiceService {
-    private final BigDecimal AUTO_APPROVAL_LIMIT = new BigDecimal("50000");
 
     private final InvoiceRepository invoiceRepository;
     private final VendorRepository vendorRepository;
     private final InvoiceAuditRepository invoiceAuditRepository;
 
-    public InvoiceService(InvoiceRepository invoiceRepository, VendorRepository vendorRepository, InvoiceAuditRepository invoiceAuditRepository) {
+    public InvoiceService(BigDecimal autoApprovalLimit, InvoiceRepository invoiceRepository, VendorRepository vendorRepository, InvoiceAuditRepository invoiceAuditRepository) {
         this.invoiceRepository = invoiceRepository;
         this.vendorRepository = vendorRepository;
         this.invoiceAuditRepository = invoiceAuditRepository;
     }
+
+    @Value("${invoice.auto-approval-limit}")
+    private BigDecimal AUTO_APPROVAL_LIMIT;
 
     public InvoiceResponseDTO generateInvoice(InvoiceCreationRequestDTO request) {
 

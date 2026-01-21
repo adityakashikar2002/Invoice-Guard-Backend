@@ -3,6 +3,7 @@ package com.springboot.learning.invoiceguard.controller;
 import com.springboot.learning.invoiceguard.dto.VendorRequestDTO;
 import com.springboot.learning.invoiceguard.dto.VendorResponseDTO;
 import com.springboot.learning.invoiceguard.service.VendorService;
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -18,7 +19,7 @@ public class VendorController {
     }
 
     @PostMapping("/register")
-    public VendorResponseDTO createVendor(@RequestBody VendorRequestDTO request) {
+    public VendorResponseDTO createVendor(@Valid @RequestBody VendorRequestDTO request) {
         // Just calling the service and returning the result
         return vendorService.registerVendor(request);
     }

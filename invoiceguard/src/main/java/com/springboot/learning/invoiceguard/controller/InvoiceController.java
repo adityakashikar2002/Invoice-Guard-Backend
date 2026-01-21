@@ -6,6 +6,7 @@ import com.springboot.learning.invoiceguard.dto.InvoiceResponseDTO;
 import com.springboot.learning.invoiceguard.model.InvoiceAudit;
 import com.springboot.learning.invoiceguard.model.InvoiceStatus;
 import com.springboot.learning.invoiceguard.service.InvoiceService;
+import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -25,7 +26,7 @@ public class InvoiceController {
     }
 
     @PostMapping("/create")
-    public InvoiceResponseDTO createInvoice(@RequestBody InvoiceCreationRequestDTO request) {
+    public InvoiceResponseDTO createInvoice( @Valid @RequestBody InvoiceCreationRequestDTO request) {
         return invoiceService.generateInvoice(request);
     }
 
