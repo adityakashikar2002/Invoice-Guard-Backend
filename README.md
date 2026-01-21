@@ -123,7 +123,7 @@ http://localhost:8080/v3/api-docs
 - Pagination parameters
 
 ### Dependency Used
-implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.x.x'
+implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.1'
 
 ---
 
@@ -133,7 +133,7 @@ implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.x.x'
 - Spring Boot
 - Spring Data JPA
 - H2 Database
-- Swagger / OpenAPI
+- Swagger
 
 ---
 
