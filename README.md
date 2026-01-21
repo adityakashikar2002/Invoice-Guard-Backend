@@ -142,7 +142,9 @@ implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.1'
 1. Clone the repository
 
 2. Run using:
+```bash
 mvn spring-boot:run
+```
 
 3. Access APIs at:
 http://localhost:8080/api/invoices
