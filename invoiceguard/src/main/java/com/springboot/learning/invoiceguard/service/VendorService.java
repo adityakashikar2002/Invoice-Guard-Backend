@@ -1,7 +1,7 @@
 package com.springboot.learning.invoiceguard.service;
 
-import com.springboot.learning.invoiceguard.dto.VendorRequestDTO;
-import com.springboot.learning.invoiceguard.dto.VendorResponseDTO;
+import com.springboot.learning.invoiceguard.dto.VendorRequest;
+import com.springboot.learning.invoiceguard.dto.VendorResponse;
 import com.springboot.learning.invoiceguard.exception.VendorNotFoundException;
 import com.springboot.learning.invoiceguard.model.Vendor;
 import com.springboot.learning.invoiceguard.model.VendorStatus;
@@ -20,13 +20,13 @@ public class VendorService {
         this.vendorRepository = vendorRepository;
     }
 
-    public VendorResponseDTO registerVendor(VendorRequestDTO request) {
+    public VendorResponse registerVendor(VendorRequest request) {
 
         Vendor vendor = new Vendor(request.getName(), VendorStatus.ACTIVE);
 
         Vendor savedVendor = vendorRepository.save(vendor);
 
-        return new VendorResponseDTO(
+        return new VendorResponse(
                 savedVendor.getVendorId(),
                 savedVendor.getVendorName(),
                 savedVendor.getRegisNo(),
@@ -34,20 +34,20 @@ public class VendorService {
         );
     }
 
-    public VendorResponseDTO getVendorById(Long id) {
+    public VendorResponse getVendorById(Long id) {
         Optional<Vendor> vendor = vendorRepository.findById(id);
 
         if(vendor.isEmpty())
             throw new VendorNotFoundException("No Vendor Found !!");
 
-        return new VendorResponseDTO(vendor.get().getVendorId(), vendor.get().getVendorName(),
+        return new VendorResponse(vendor.get().getVendorId(), vendor.get().getVendorName(),
                 vendor.get().getRegisNo(), vendor.get().getStatus());
     }
 
-    public List<VendorResponseDTO> getAllVendors() {
+    public List<VendorResponse> getAllVendors() {
         List<Vendor> vendors = vendorRepository.findAll();
 
-        return vendors.stream().map(v -> new VendorResponseDTO(
+        return vendors.stream().map(v -> new VendorResponse(
                 v.getVendorId(),
                 v.getVendorName(),
                 v.getRegisNo(),

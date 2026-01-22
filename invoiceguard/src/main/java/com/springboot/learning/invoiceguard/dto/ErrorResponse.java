@@ -3,14 +3,14 @@ package com.springboot.learning.invoiceguard.dto;
 
 import org.jspecify.annotations.NonNull;
 
-public class ErrorResponseDTO {
+public class ErrorResponse {
     @NonNull
     private String statusCode;
 
     @NonNull
     private String errorMsg;
 
-    public ErrorResponseDTO(String statusCode, String errorMsg) {
+    public ErrorResponse(String statusCode, String errorMsg) {
         this.statusCode = statusCode;
         this.errorMsg = errorMsg;
     }

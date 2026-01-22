@@ -1,52 +1,43 @@
 package com.springboot.learning.invoiceguard.dto;
 
-import com.springboot.learning.invoiceguard.model.VendorStatus;
+import jakarta.validation.constraints.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
-public class InvoiceResponseDTO {
+public class InvoiceCreationRequest {
 
-    private Long id;
-
+    @NotBlank(message = "Every Invoice Needs Invoice No.")
     private String invoiceNo;
 
+    @NotNull(message = "Invoice can't be created without Vendor")
     private Long vendorId;
 
-    private String vendorName;
-
-    private VendorStatus vendorStatus;
-
+    @NotBlank(message = "Client must be named on Invoice")
     private String billTo;
 
+    @NotNull
+    @Min(1)
     private BigDecimal amount;
 
+    @NotNull
+    @FutureOrPresent(message = "Invoice date can't be in past")
     private LocalDate invoiceDate;
 
+    @Future
     private LocalDate dueDate;
 
-    public InvoiceResponseDTO() {
+    public InvoiceCreationRequest() {
 
     }
 
-    public InvoiceResponseDTO(Long id, String invoiceNo, Long vendorId, String vendorName, VendorStatus vendorStatus, String billTo, BigDecimal amount, LocalDate invoiceDate, LocalDate dueDate) {
-        this.id = id;
+    public InvoiceCreationRequest(String invoiceNo, Long vendorId, String billTo, BigDecimal amount, LocalDate invoiceDate, LocalDate dueDate) {
         this.invoiceNo = invoiceNo;
         this.vendorId = vendorId;
-        this.vendorName = vendorName;
-        this.vendorStatus = vendorStatus;
         this.billTo = billTo;
         this.amount = amount;
         this.invoiceDate = invoiceDate;
         this.dueDate = dueDate;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
     }
 
     public Long getVendorId() {
@@ -55,14 +46,6 @@ public class InvoiceResponseDTO {
 
     public void setVendorId(Long vendorId) {
         this.vendorId = vendorId;
-    }
-
-    public VendorStatus getVendorStatus() {
-        return vendorStatus;
-    }
-
-    public void setVendorStatus(VendorStatus vendorStatus) {
-        this.vendorStatus = vendorStatus;
     }
 
     public String getBillTo() {
@@ -97,19 +80,11 @@ public class InvoiceResponseDTO {
         this.dueDate = dueDate;
     }
 
-    public String getVendorName() {
-        return vendorName;
-    }
-
-    public void setVendorName(String vendorName) {
-        this.vendorName = vendorName;
-    }
-
-    public String getInvoiceNum() {
+    public String getInvoiceNo() {
         return invoiceNo;
     }
 
-    public void setInvoiceNum(String invoiceNum) {
-        this.invoiceNo = invoiceNum;
+    public void setInvoiceNo(String invoiceNo) {
+        this.invoiceNo = invoiceNo;
     }
 }

@@ -2,17 +2,17 @@ package com.springboot.learning.invoiceguard.dto;
 
 import com.springboot.learning.invoiceguard.model.InvoiceStatus;
 
-public class InvoiceActionResponseDTO {
+public class InvoiceActionResponse {
 
     private String message;
     private Long id;
     private InvoiceStatus newStatus;
 
-    public InvoiceActionResponseDTO() {
+    public InvoiceActionResponse() {
 
     }
 
-    public InvoiceActionResponseDTO(String message, Long id, InvoiceStatus newStatus) {
+    public InvoiceActionResponse(String message, Long id, InvoiceStatus newStatus) {
         this.message = message;
         this.id = id;
         this.newStatus = newStatus;

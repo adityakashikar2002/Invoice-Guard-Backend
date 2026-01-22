@@ -1,8 +1,9 @@
 package com.springboot.learning.invoiceguard.service;
 
-import com.springboot.learning.invoiceguard.dto.InvoiceActionResponseDTO;
-import com.springboot.learning.invoiceguard.dto.InvoiceCreationRequestDTO;
-import com.springboot.learning.invoiceguard.dto.InvoiceResponseDTO;
+import com.springboot.learning.invoiceguard.dto.InvoiceActionRequest;
+import com.springboot.learning.invoiceguard.dto.InvoiceActionResponse;
+import com.springboot.learning.invoiceguard.dto.InvoiceCreationRequest;
+import com.springboot.learning.invoiceguard.dto.InvoiceResponse;
 import com.springboot.learning.invoiceguard.exception.*;
 import com.springboot.learning.invoiceguard.model.*;
 import com.springboot.learning.invoiceguard.repository.InvoiceAuditRepository;
@@ -15,6 +16,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -40,7 +42,7 @@ public class InvoiceService {
     private BigDecimal AUTO_APPROVAL_LIMIT;
 
 
-    public InvoiceResponseDTO generateInvoice(InvoiceCreationRequestDTO request) {
+    public InvoiceResponse generateInvoice(InvoiceCreationRequest request) {
 
 
         // Fetch Vendor By Id
@@ -68,7 +70,7 @@ public class InvoiceService {
         Invoice savedInvoice = invoiceRepository.save(invoice);
 
         // Create Response
-        return new InvoiceResponseDTO(savedInvoice.getId(), savedInvoice.getInvoiceNumber(), vendor.getVendorId(), vendor.getVendorName(), vendor.getStatus(),
+        return new InvoiceResponse(savedInvoice.getId(), savedInvoice.getInvoiceNumber(), vendor.getVendorId(), vendor.getVendorName(), vendor.getStatus(),
                 savedInvoice.getBillTo(), savedInvoice.getAmount(), savedInvoice.getInvoiceDate(), savedInvoice.getDueDate());
     }
 
@@ -96,18 +98,35 @@ public class InvoiceService {
 
     private InvoiceStatus validateAndGetStatus(InvoiceStatus oldStatus, InvoiceStatus required, InvoiceStatus target) {
         if(oldStatus != required)
-            throw new InvoiceStatusException("Only " + required.toString() + " can be processed for transitions.");
+            throw new InvoiceStatusException("Only " + required.toString() + " invoices can be processed for transitions.");
 
         return target;
     }
 
-    public InvoiceActionResponseDTO updateStatus(Long id, InvoiceAction action) {
+    private String getTransitionMessage(InvoiceAction action, InvoiceStatus targetStatus) {
+        if (action == InvoiceAction.SUBMIT && targetStatus == InvoiceStatus.APPROVED) {
+            return "Invoice auto-approved based on threshold limit.";
+        }
+
+        return switch (action) {
+            case SUBMIT -> "Invoice Submitted for review.";
+            case APPROVE -> "Invoice Approved successfully.";
+            case REJECT -> "Invoice has been Rejected.";
+            case PAY -> "Payment processed successfully.";
+            default -> "Invalid action !!";
+        };
+    }
+
+    @Transactional
+    public InvoiceActionResponse updateStatus(Long id, InvoiceActionRequest request) {
         // Check if Invoice Exists
         Invoice invoice = findAndValidateInvoice(id);
 
         // Acquire Old Status
         InvoiceStatus oldStatus = invoice.getStatus();
         InvoiceStatus targetStatus;
+
+        InvoiceAction action = request.getAction();
 
         switch (action) {
             case InvoiceAction.SUBMIT:
@@ -125,20 +144,19 @@ public class InvoiceService {
                 targetStatus = validateAndGetStatus(oldStatus, InvoiceStatus.APPROVED, InvoiceStatus.PAID);
                 break;
             default:
-                throw new InvalidInvoiceAction("Transition State Not Supported");
+                throw new InvalidInvoiceActionException("Transition State Not Supported");
         }
 
         // Action Completion Message
-        String message = (action == InvoiceAction.SUBMIT && targetStatus == InvoiceStatus.APPROVED)
-                ? "Invoice Auto-Approved"
-                : "Action " + action + " completed successfully";
+        String message = getTransitionMessage(action, targetStatus);
 
         // Save Invoice, Make Audit, Save Audit
-        invoiceRepository.save(invoice);
-        InvoiceAudit invoiceAudit = new InvoiceAudit(invoice.getId(), oldStatus, targetStatus, LocalDateTime.now(), action);
+        invoice.setStatus(targetStatus);
+        Invoice savedInvoice = invoiceRepository.save(invoice);
+        InvoiceAudit invoiceAudit = new InvoiceAudit(savedInvoice.getId(), oldStatus, targetStatus, LocalDateTime.now(), action);
         invoiceAuditRepository.save(invoiceAudit);
 
-        return new InvoiceActionResponseDTO(message, id, targetStatus);
+        return new InvoiceActionResponse(message, id, targetStatus);
 
     }
 
@@ -146,13 +164,13 @@ public class InvoiceService {
         return invoiceAuditRepository.findByInvoiceIdOrderByTimeStampDesc(id);
     }
 
-    private List<InvoiceResponseDTO> convertToInvoiceResponse(List<Invoice> invoices) {
-        List<InvoiceResponseDTO> invoicesList = new ArrayList<>();
+    private List<InvoiceResponse> convertToInvoiceResponse(List<Invoice> invoices) {
+        List<InvoiceResponse> invoicesList = new ArrayList<>();
 
         for(Invoice invoice : invoices) {
             Vendor vendor = invoice.getVendor();
 
-            invoicesList.add(new InvoiceResponseDTO(invoice.getId(), invoice.getInvoiceNumber(),
+            invoicesList.add(new InvoiceResponse(invoice.getId(), invoice.getInvoiceNumber(),
                     vendor.getVendorId(), vendor.getVendorName(), vendor.getStatus(),
                     invoice.getBillTo(),invoice.getAmount(), invoice.getInvoiceDate(),invoice.getDueDate()));
         }
@@ -160,17 +178,17 @@ public class InvoiceService {
         return invoicesList;
     }
 
-    private Page<InvoiceResponseDTO> getInvoices(Specification<Invoice> spec, Pageable pageable) {
+    private Page<InvoiceResponse> getInvoices(Specification<Invoice> spec, Pageable pageable) {
 
         Page<Invoice> invoices = invoiceRepository.findAll(spec, pageable);
 
-        List<InvoiceResponseDTO> invLists = convertToInvoiceResponse(invoices.getContent());
+        List<InvoiceResponse> invLists = convertToInvoiceResponse(invoices.getContent());
 
         return new PageImpl<>(invLists, pageable, invoices.getTotalElements());
     }
 
-    public Page<InvoiceResponseDTO> searchInvoices(InvoiceStatus status, Long vendorId,
-                                    LocalDate startDate, LocalDate endDate, Pageable pageable) {
+    public Page<InvoiceResponse> searchInvoices(InvoiceStatus status, Long vendorId,
+                                                LocalDate startDate, LocalDate endDate, Pageable pageable) {
 
         Specification<Invoice> spec = Specification.
                 where(InvoiceSpecification.hasStatus(status))

@@ -1,7 +1,7 @@
 package com.springboot.learning.invoiceguard.controller;
 
-import com.springboot.learning.invoiceguard.dto.VendorRequestDTO;
-import com.springboot.learning.invoiceguard.dto.VendorResponseDTO;
+import com.springboot.learning.invoiceguard.dto.VendorRequest;
+import com.springboot.learning.invoiceguard.dto.VendorResponse;
 import com.springboot.learning.invoiceguard.service.VendorService;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
@@ -19,18 +19,18 @@ public class VendorController {
     }
 
     @PostMapping("/register")
-    public VendorResponseDTO createVendor(@Valid @RequestBody VendorRequestDTO request) {
+    public VendorResponse createVendor(@Valid @RequestBody VendorRequest request) {
         // Just calling the service and returning the result
         return vendorService.registerVendor(request);
     }
 
     @GetMapping("/{id}")
-    public VendorResponseDTO getById(@PathVariable Long id) {
+    public VendorResponse getById(@PathVariable Long id) {
         return vendorService.getVendorById(id);
     }
 
     @GetMapping("/all")
-    public List<VendorResponseDTO> getAll() {
+    public List<VendorResponse> getAll() {
         return vendorService.getAllVendors();
     }
 }

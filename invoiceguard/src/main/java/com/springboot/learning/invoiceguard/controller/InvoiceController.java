@@ -1,9 +1,9 @@
 package com.springboot.learning.invoiceguard.controller;
 
-import com.springboot.learning.invoiceguard.dto.InvoiceActionResponseDTO;
-import com.springboot.learning.invoiceguard.dto.InvoiceCreationRequestDTO;
-import com.springboot.learning.invoiceguard.dto.InvoiceResponseDTO;
-import com.springboot.learning.invoiceguard.model.InvoiceAction;
+import com.springboot.learning.invoiceguard.dto.InvoiceActionRequest;
+import com.springboot.learning.invoiceguard.dto.InvoiceActionResponse;
+import com.springboot.learning.invoiceguard.dto.InvoiceCreationRequest;
+import com.springboot.learning.invoiceguard.dto.InvoiceResponse;
 import com.springboot.learning.invoiceguard.model.InvoiceAudit;
 import com.springboot.learning.invoiceguard.model.InvoiceStatus;
 import com.springboot.learning.invoiceguard.service.InvoiceService;
@@ -27,13 +27,13 @@ public class InvoiceController {
     }
 
     @PostMapping("/create")
-    public InvoiceResponseDTO createInvoice( @Valid @RequestBody InvoiceCreationRequestDTO request) {
+    public InvoiceResponse createInvoice(@Valid @RequestBody InvoiceCreationRequest request) {
         return invoiceService.generateInvoice(request);
     }
 
     @PatchMapping("/{id}/status")
-    public InvoiceActionResponseDTO updateInvoiceStatus(@PathVariable Long id, @Valid @RequestBody InvoiceAction action) {
-        return invoiceService.updateStatus(id,action);
+    public InvoiceActionResponse updateInvoiceStatus(@PathVariable Long id, @Valid @RequestBody InvoiceActionRequest request) {
+        return invoiceService.updateStatus(id,request);
     }
 
     @GetMapping("/{id}/audit")
@@ -42,7 +42,7 @@ public class InvoiceController {
     }
 
     @GetMapping("/search")
-    public Page<InvoiceResponseDTO> searchInvoices(
+    public Page<InvoiceResponse> searchInvoices(
             @RequestParam(value = "status", required = false)InvoiceStatus status,
             @RequestParam(value = "vendorId", required = false)Long vendorId,
             @RequestParam(value = "startDate", required = false)LocalDate start,
@@ -54,7 +54,7 @@ public class InvoiceController {
         Pageable pageable = PageRequest.of(page, size);
 
         return invoiceService.searchInvoices(status, vendorId, start, end, pageable);
-        
+
     }
 
 }
