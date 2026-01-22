@@ -4,6 +4,10 @@ server:
 spring:
   application:
     name: invoice-guard
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
 
   h2:
     console:
@@ -16,4 +20,4 @@ spring:
 
 
 invoice:
-  auto-approval-limit = 50000
+  auto-approval-limit: 50000

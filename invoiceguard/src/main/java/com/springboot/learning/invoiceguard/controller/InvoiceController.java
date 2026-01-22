@@ -44,7 +44,7 @@ public class InvoiceController {
     @GetMapping("/search")
     public Page<InvoiceResponseDTO> searchInvoices(
             @RequestParam(value = "status", required = false)InvoiceStatus status,
-            @RequestParam(value = "vectorId", required = false)Long vendorId,
+            @RequestParam(value = "vendorId", required = false)Long vendorId,
             @RequestParam(value = "startDate", required = false)LocalDate start,
             @RequestParam(value = "endDate", required = false) LocalDate end,
             @RequestParam(defaultValue = "0") int page,
@@ -53,14 +53,16 @@ public class InvoiceController {
     {
         Pageable pageable = PageRequest.of(page, size);
 
-        if (status != null)
-            return invoiceService.getInvoiceByStatus(status, pageable);
-        else if (vendorId != null)
-            return invoiceService.getInvoiceByVendorId(vendorId, pageable);
-        else if (start != null && end != null)
-            return invoiceService.getInvoiceBetween(start, end, pageable);
-        else
-            return invoiceService.getInvoices(pageable);
+        return invoiceService.searchInvoices(status, vendorId, start, end, pageable);
+
+//        if (status != null)
+//            return invoiceService.getInvoiceByStatus(status, pageable);
+//        else if (vendorId != null)
+//            return invoiceService.getInvoiceByVendorId(vendorId, pageable);
+//        else if (start != null && end != null)
+//            return invoiceService.getInvoiceBetween(start, end, pageable);
+//        else
+//            return invoiceService.getInvoices(pageable);
     }
 
 }
