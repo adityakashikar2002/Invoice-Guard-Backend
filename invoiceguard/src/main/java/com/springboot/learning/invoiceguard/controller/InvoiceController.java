@@ -54,15 +54,7 @@ public class InvoiceController {
         Pageable pageable = PageRequest.of(page, size);
 
         return invoiceService.searchInvoices(status, vendorId, start, end, pageable);
-
-//        if (status != null)
-//            return invoiceService.getInvoiceByStatus(status, pageable);
-//        else if (vendorId != null)
-//            return invoiceService.getInvoiceByVendorId(vendorId, pageable);
-//        else if (start != null && end != null)
-//            return invoiceService.getInvoiceBetween(start, end, pageable);
-//        else
-//            return invoiceService.getInvoices(pageable);
+        
     }
 
 }

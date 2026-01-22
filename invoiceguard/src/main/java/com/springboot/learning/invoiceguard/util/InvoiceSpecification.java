@@ -20,8 +20,16 @@ public class InvoiceSpecification {
     }
 
     public static Specification<Invoice> datedBetween(LocalDate startDate, LocalDate endDate) {
-        return ((root, query, criteriaBuilder) ->
-                startDate != null && endDate != null ?
-                        criteriaBuilder.between(root.get("invoiceDate"), startDate, endDate) : null);
+        return ((root, query, criteriaBuilder) -> {
+            if (startDate != null && endDate != null)
+                return criteriaBuilder.between(root.get("invoiceDate"), startDate, endDate);
+            else if (startDate != null)
+                return criteriaBuilder.greaterThanOrEqualTo(root.get("invoiceDate"), startDate);
+            else if (endDate != null)
+                return criteriaBuilder.lessThanOrEqualTo(root.get("invoiceDate"), endDate);
+            else
+                return null;
+        });
+
     }
 }
